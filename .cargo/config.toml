@@ -1,0 +1,10 @@
+# CosmWasm host functions (db_read, addr_validate, abort, ...) are provided by
+# the chain's VM at runtime. cosmwasm-std declares them as plain externs, which
+# rust-lld (Rust 1.87+) no longer turns into wasm imports by default —
+# --allow-undefined restores that behaviour and emits them as env.* imports,
+# which is exactly the CosmWasm ABI.
+[target.wasm32-unknown-unknown]
+rustflags = ["-C", "link-arg=--allow-undefined"]
+
+[alias]
+wasm = "build --release --target wasm32-unknown-unknown"
