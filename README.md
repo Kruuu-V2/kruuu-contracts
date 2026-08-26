@@ -31,6 +31,20 @@ Anchors Kruuu certifications on-chain. Design decisions:
   JSON) plus an optional `metadata_uri` (IPFS), so anyone can verify the
   off-chain document against the chain.
 
+## Generate a signer key (founders + backup)
+
+```bash
+git clone https://github.com/Kruuu-V2/kruuu-contracts.git
+cd kruuu-contracts
+bun install
+bun run generate-key
+```
+
+Runs fully offline. Write the 24-word mnemonic on paper (twice-checked),
+never store it digitally, and share **only** the printed `xion1...` address.
+Run it once per signer; the backup key's paper goes somewhere that isn't a
+founder's laptop.
+
 ## Develop
 
 ```bash

@@ -1,0 +1,11 @@
+{
+  "name": "kruuu-contracts-scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate-key": "bun scripts/generate-key.ts"
+  },
+  "dependencies": {
+    "@cosmjs/proto-signing": "^0.33.1"
+  }
+}

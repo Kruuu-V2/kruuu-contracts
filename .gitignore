@@ -2,3 +2,4 @@ target/
 artifacts/
 *.wasm
 .env
+node_modules/
