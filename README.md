@@ -86,6 +86,7 @@ THRESHOLD=2 \
 bun run deploy
 
 bun run check                   # proves owner/admin/issuer wiring
+bun run balance xion1...        # uxion balance of any address
 ```
 
 `deployments/<chain-id>.json` is committed; mnemonics never are.
