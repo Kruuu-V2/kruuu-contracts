@@ -70,3 +70,41 @@ for reproducible, size-optimized wasm before storing on-chain.
 4. Fund a treasury/fee grant for the relayer's gas.
 5. Rehearse on testnet before mainnet: rotate the issuer via proposal,
    swap a group member, run a contract migration.
+
+## Deploy to testnet
+
+```bash
+cargo wasm                      # build the registry
+bun run fetch-artifacts         # + cw4-group / cw3-flex from cw-plus v2.0.0
+bun run generate-key            # once for the deployer, once for the relayer
+# fund the deployer at https://faucet.xion.burnt.com (2 XION / 24h)
+
+DEPLOYER_MNEMONIC="..." \
+RELAYER_ADDRESS=xion1... \
+MEMBERS=xion1founderA,xion1founderB,xion1backup \
+THRESHOLD=2 \
+bun run deploy
+
+bun run check                   # proves owner/admin/issuer wiring
+```
+
+`deployments/<chain-id>.json` is committed; mnemonics never are.
+
+## Governance (2-of-3 rehearsal)
+
+Every action is: one member proposes → members vote → anyone executes.
+Members need a little gas (faucet once).
+
+```bash
+# member A
+SIGNER_MNEMONIC="..." bun run gov:propose "Rotate relayer" \
+  '{"update_issuers":{"add":["xion1new"],"remove":["xion1old"]}}'
+# member B
+SIGNER_MNEMONIC="..." bun run gov:vote <id> yes       # proposer's vote is implicit
+# anyone
+SIGNER_MNEMONIC="..." bun run gov:execute <id>
+bun run gov:proposals
+```
+
+Targets: registry messages (default), `--target group` for membership
+(`update_members`), `--target registry-migrate` for code upgrades.

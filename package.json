@@ -3,9 +3,23 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate-key": "bun scripts/generate-key.ts"
+    "generate-key": "bun scripts/generate-key.ts",
+    "fetch-artifacts": "bun scripts/fetch-artifacts.ts",
+    "deploy": "bun scripts/deploy.ts",
+    "check": "bun scripts/check.ts",
+    "gov:propose": "bun scripts/gov/propose.ts",
+    "gov:vote": "bun scripts/gov/vote.ts",
+    "gov:execute": "bun scripts/gov/execute.ts",
+    "gov:proposals": "bun scripts/gov/proposals.ts"
   },
   "dependencies": {
-    "@cosmjs/proto-signing": "^0.33.1"
+    "@cosmjs/cosmwasm-stargate": "^0.33.1",
+    "@cosmjs/encoding": "^0.33.1",
+    "@cosmjs/proto-signing": "^0.33.1",
+    "@cosmjs/stargate": "^0.33.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0",
+    "typescript": "^7.0.2"
   }
 }
