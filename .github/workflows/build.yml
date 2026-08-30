@@ -1,0 +1,32 @@
+name: Reproducible wasm build
+
+on:
+  push:
+    branches: [main]
+    paths: ['contracts/**', 'Cargo.*', '.github/workflows/build.yml']
+  workflow_dispatch:
+
+jobs:
+  optimize:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build with cosmwasm/optimizer
+        run: |
+          docker run --rm \
+            -v "$PWD":/code \
+            --mount type=volume,source=kruuu_contracts_cache,target=/target \
+            --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+            cosmwasm/optimizer:0.17.0
+
+      - name: Show checksums
+        run: cat artifacts/checksums.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wasm-${{ github.sha }}
+          path: |
+            artifacts/*.wasm
+            artifacts/checksums.txt
+          if-no-files-found: error
