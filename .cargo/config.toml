@@ -3,8 +3,15 @@
 # rust-lld (Rust 1.87+) no longer turns into wasm imports by default —
 # --allow-undefined restores that behaviour and emits them as env.* imports,
 # which is exactly the CosmWasm ABI.
+#
+# Rust 1.82+/1.87+ also enable reference-types, multivalue and bulk-memory by
+# default for wasm32; wasmd's static validation rejects them, so they are
+# switched off here.
 [target.wasm32-unknown-unknown]
-rustflags = ["-C", "link-arg=--allow-undefined"]
+rustflags = [
+  "-C", "link-arg=--allow-undefined",
+  "-C", "target-feature=-bulk-memory,-reference-types,-multivalue,-nontrapping-fptoint",
+]
 
 [alias]
 wasm = "build --release --target wasm32-unknown-unknown"

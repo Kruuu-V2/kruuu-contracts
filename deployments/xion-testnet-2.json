@@ -1,0 +1,22 @@
+{
+  "chainId": "xion-testnet-2",
+  "deployedAt": "2026-08-30T08:24:07.435Z",
+  "deployer": "xion13yc9wl6sggnen2zn6uswg7l76vxsuhwj80xr5v",
+  "codeIds": {
+    "cw4Group": 2307,
+    "cw3FlexMultisig": 2308,
+    "certificateRegistry": 2309
+  },
+  "contracts": {
+    "group": "xion18acawa4ly3z9q60lnfppvjmxlmdstzz50awzugndzky00f3kl2yquf8rur",
+    "multisig": "xion152ahzty7vns6gj85uspdgdmkmghp5emzk7r5l25uc66tqafqpvrqnd8l7m",
+    "registry": "xion1sjj73a9smku0uadrqvgqmhv8kvu0z26sd9uf40x4k2y2aa2px8pssuqhzp"
+  },
+  "members": [
+    "xion1jsj3h3ulxd66ka6dwthj73750ktyg36hdqt2lg",
+    "xion1xjzm46ykvk7phllgsx0dejnvajx6hj9d7j3amc",
+    "xion1zz6gfxxhtaylmemkjepda8thrh3eyr7jtwg468"
+  ],
+  "threshold": 2,
+  "relayer": "xion1l2ghvypk85fqdwhypu02nlz48lr7enq4dlze3s"
+}

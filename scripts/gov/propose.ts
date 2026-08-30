@@ -8,7 +8,7 @@
  *   bun run gov:propose "Migrate registry" '{"migrate":{"new_code_id":42}}' --target registry-migrate
  */
 import { toUtf8 } from '@cosmjs/encoding'
-import { loadDeployment, explorerTx, signer } from '../lib/chain'
+import { loadDeployment, explorerTx, signer, GAS_MULTIPLIER } from '../lib/chain'
 
 const [title, rawMsg, ...flags] = process.argv.slice(2)
 if (!title || !rawMsg) throw new Error('usage: propose <title> <json-msg> [--target registry|group|registry-migrate]')
@@ -46,7 +46,7 @@ const res = await client.execute(
   address,
   d.contracts.multisig,
   { propose: { title, description: title, msgs: [cosmosMsg] } },
-  'auto',
+  GAS_MULTIPLIER,
 )
 const id = res.events
   .flatMap((e) => e.attributes)

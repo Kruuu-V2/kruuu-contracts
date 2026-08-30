@@ -14,7 +14,7 @@
  * migration-administered by the multisig — the deployer never holds either.
  */
 import { readFileSync, writeFileSync } from 'node:fs'
-import { deploymentPath, explorerTx, requireEnv, signer, type Deployment } from './lib/chain'
+import { deploymentPath, explorerTx, requireEnv, signer, GAS_MULTIPLIER, type Deployment } from './lib/chain'
 
 const members = requireEnv('MEMBERS').split(',').map((s) => s.trim()).filter(Boolean)
 const threshold = Number(process.env.THRESHOLD ?? 2)
@@ -31,7 +31,7 @@ if (Number(balance.amount) < 500_000) {
 
 async function store(name: string) {
   const wasm = readFileSync(`artifacts/${name}`)
-  const res = await client.upload(deployer, wasm, 'auto', `kruuu ${name}`)
+  const res = await client.upload(deployer, wasm, GAS_MULTIPLIER, `kruuu ${name}`)
   console.log(`stored ${name} → code ${res.codeId}  ${explorerTx(res.transactionHash)}`)
   return res.codeId
 }
@@ -47,7 +47,7 @@ const group = await client.instantiate(
   codeIds.cw4Group,
   { admin: deployer, members: members.map((addr) => ({ addr, weight: 1 })) },
   'kruuu-governance-group',
-  'auto',
+  GAS_MULTIPLIER,
   { admin: deployer },
 )
 console.log(`group      ${group.contractAddress}`)
@@ -63,15 +63,15 @@ const multisig = await client.instantiate(
     proposal_deposit: null,
   },
   'kruuu-governance-multisig',
-  'auto',
+  GAS_MULTIPLIER,
   { admin: deployer },
 )
 console.log(`multisig   ${multisig.contractAddress}`)
 
 // Hand the group to the multisig: membership changes now need a passed vote.
-await client.execute(deployer, group.contractAddress, { update_admin: { admin: multisig.contractAddress } }, 'auto')
-await client.updateAdmin(deployer, group.contractAddress, multisig.contractAddress, 'auto')
-await client.updateAdmin(deployer, multisig.contractAddress, multisig.contractAddress, 'auto')
+await client.execute(deployer, group.contractAddress, { update_admin: { admin: multisig.contractAddress } }, GAS_MULTIPLIER)
+await client.updateAdmin(deployer, group.contractAddress, multisig.contractAddress, GAS_MULTIPLIER)
+await client.updateAdmin(deployer, multisig.contractAddress, multisig.contractAddress, GAS_MULTIPLIER)
 console.log('group + multisig admin → multisig')
 
 const registry = await client.instantiate(
@@ -79,7 +79,7 @@ const registry = await client.instantiate(
   codeIds.certificateRegistry,
   { owner: multisig.contractAddress, issuers: [relayer] },
   'kruuu-certificate-registry',
-  'auto',
+  GAS_MULTIPLIER,
   { admin: multisig.contractAddress },
 )
 console.log(`registry   ${registry.contractAddress}`)

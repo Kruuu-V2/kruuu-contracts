@@ -8,6 +8,8 @@
     "deploy": "bun scripts/deploy.ts",
     "check": "bun scripts/check.ts",
     "balance": "bun scripts/balance.ts",
+    "issue": "bun scripts/issue.ts",
+    "cert": "bun scripts/cert.ts",
     "gov:propose": "bun scripts/gov/propose.ts",
     "gov:vote": "bun scripts/gov/vote.ts",
     "gov:execute": "bun scripts/gov/execute.ts",

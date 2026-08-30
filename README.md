@@ -52,10 +52,14 @@ cargo test          # unit + cw-multi-test integration tests
 cargo wasm          # release build for wasm32-unknown-unknown
 ```
 
-On Windows without MSVC Build Tools, use the GNU toolchain:
-`rustup override set stable-x86_64-pc-windows-gnu` (already set in this
-checkout). `.cargo/config.toml` carries the `--allow-undefined` linker flag
-newer rust-lld needs to emit the CosmWasm host functions as wasm imports.
+`rust-toolchain.toml` pins Rust **1.86.0**. Rust 1.87+ ships a wasm32 std
+compiled with bulk-memory instructions, which wasmd's static validation
+rejects (`bulk memory support is not enabled`) no matter what target
+features the contract itself is built with. On Windows without MSVC Build
+Tools use the GNU host: `rustup override set 1.86.0-x86_64-pc-windows-gnu`.
+`.cargo/config.toml` carries the `--allow-undefined` linker flag rust-lld
+needs to emit the CosmWasm host functions as wasm imports, and disables the
+post-MVP wasm features for the contract crate.
 
 Production artifacts must be built with [cosmwasm/optimizer](https://github.com/CosmWasm/optimizer)
 for reproducible, size-optimized wasm before storing on-chain.
@@ -87,9 +91,24 @@ bun run deploy
 
 bun run check                   # proves owner/admin/issuer wiring
 bun run balance xion1...        # uxion balance of any address
+RELAYER_MNEMONIC="..." bun run issue '{"cert_id":"cert:1","institution_id":1,"recipient_id":2,"template_id":3}'
+bun run cert cert:1             # read a record back
 ```
 
-`deployments/<chain-id>.json` is committed; mnemonics never are.
+`deployments/<chain-id>.json` is committed; mnemonics never are. Fees use
+a 2x gas multiplier (`GAS_MULTIPLIER` in `scripts/lib/chain.ts`): the
+testnet's simulation under-reports state-write gas by ~50%.
+
+### xion-testnet-2 (deployed 2026-08-30)
+
+| | address |
+|---|---|
+| registry | `xion1sjj73a9smku0uadrqvgqmhv8kvu0z26sd9uf40x4k2y2aa2px8pssuqhzp` |
+| multisig (owner + admin) | `xion152ahzty7vns6gj85uspdgdmkmghp5emzk7r5l25uc66tqafqpvrqnd8l7m` |
+| group (members) | `xion18acawa4ly3z9q60lnfppvjmxlmdstzz50awzugndzky00f3kl2yquf8rur` |
+| relayer (issuer) | `xion1l2ghvypk85fqdwhypu02nlz48lr7enq4dlze3s` |
+
+Explorer: `https://explorer.burnt.com/xion-testnet-2/account/<address>`.
 
 ## Governance (2-of-3 rehearsal)
 

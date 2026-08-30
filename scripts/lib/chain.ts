@@ -37,6 +37,8 @@ export function requireEnv(name: string): string {
 }
 
 /** Signing client for the key in the given env var (mnemonic never touches disk). */
+export const GAS_MULTIPLIER = 2
+
 export async function signer(mnemonicEnv: string) {
   const config = network()
   const wallet = await DirectSecp256k1HdWallet.fromMnemonic(requireEnv(mnemonicEnv), {
