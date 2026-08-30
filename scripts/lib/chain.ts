@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { SigningCosmWasmClient, CosmWasmClient } from '@cosmjs/cosmwasm-stargate'
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing'
 import { GasPrice } from '@cosmjs/stargate'
+import { readMnemonic } from './secret'
 
 export interface ChainConfig {
   chainId: string
@@ -36,12 +37,12 @@ export function requireEnv(name: string): string {
   return value
 }
 
-/** Signing client for the key in the given env var (mnemonic never touches disk). */
+/** Signing client for the key in the given env var, or prompted (hidden) when unset. Never touches disk. */
 export const GAS_MULTIPLIER = 2
 
 export async function signer(mnemonicEnv: string) {
   const config = network()
-  const wallet = await DirectSecp256k1HdWallet.fromMnemonic(requireEnv(mnemonicEnv), {
+  const wallet = await DirectSecp256k1HdWallet.fromMnemonic(await readMnemonic(mnemonicEnv), {
     prefix: config.prefix,
   })
   const [account] = await wallet.getAccounts()

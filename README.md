@@ -136,7 +136,13 @@ propose → vote → execute loop alone. It adds a throwaway issuer and removes
 it again, proving the multisig controls the registry:
 
 ```bash
-PROPOSER_MNEMONIC="..." VOTER_MNEMONIC="..." bun run gov:rehearse
+bun run gov:rehearse
 ```
 
-Both keys need a little gas. Membership and code are never touched.
+It prompts for each mnemonic with hidden input (paste the 24 words, press
+Enter). Setting `PROPOSER_MNEMONIC` / `VOTER_MNEMONIC` in the environment
+skips the prompts. Both keys need a little gas. Membership and code are
+never touched.
+
+Every script that signs (`deploy`, `issue`, `gov:*`) prompts the same way
+when its `*_MNEMONIC` variable is not set.
