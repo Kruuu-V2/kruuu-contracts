@@ -22,6 +22,14 @@ export const NETWORKS: Record<string, ChainConfig> = {
     prefix: 'xion',
     cwPlusVersion: 'v2.0.0',
   },
+  mainnet: {
+    chainId: 'xion-mainnet-1',
+    rpc: 'https://rpc.xion-mainnet-1.burnt.com:443',
+    denom: 'uxion',
+    gasPrice: '0.001uxion',
+    prefix: 'xion',
+    cwPlusVersion: 'v2.0.0',
+  },
 }
 
 export function network(): ChainConfig {

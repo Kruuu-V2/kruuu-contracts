@@ -95,6 +95,18 @@ RELAYER_MNEMONIC="..." bun run issue '{"cert_id":"cert:1","institution_id":1,"re
 bun run cert cert:1             # read a record back
 ```
 
+Mainnet (`NETWORK=mainnet`) has governance-gated code uploads
+(`code_upload_access: Nobody`). cw4-group and cw3-flex-multisig v2.0.0 are
+already stored there (codes 10 and 9, checksums verified); the registry wasm
+from the CI "Reproducible wasm build" must be stored through governance, then:
+
+```bash
+NETWORK=mainnet CW4_GROUP_CODE_ID=10 CW3_FLEX_CODE_ID=9 REGISTRY_CODE_ID=<from governance> MEMBERS=... RELAYER_ADDRESS=... bun run deploy
+```
+
+The script verifies each preset code id's on-chain checksum against the local
+artifact before instantiating.
+
 `deployments/<chain-id>.json` is committed; mnemonics never are. Fees use
 a 2x gas multiplier (`GAS_MULTIPLIER` in `scripts/lib/chain.ts`): the
 testnet's simulation under-reports state-write gas by ~50%.

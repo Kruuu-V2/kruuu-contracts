@@ -14,6 +14,7 @@
  * migration-administered by the multisig — the deployer never holds either.
  */
 import { readFileSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { deploymentPath, explorerTx, requireEnv, signer, GAS_MULTIPLIER, type Deployment } from './lib/chain'
 
 const members = requireEnv('MEMBERS').split(',').map((s) => s.trim()).filter(Boolean)
@@ -29,17 +30,31 @@ if (Number(balance.amount) < 500_000) {
   throw new Error('deployer needs at least 0.5 XION; use the faucet at https://faucet.xion.burnt.com')
 }
 
-async function store(name: string) {
+// Chains with governance-gated uploads (Verona mainnet: code_upload_access =
+// Nobody) store the code out of band; pass the resulting ids and the script
+// verifies the on-chain checksum matches the local artifact before using it.
+async function store(name: string, codeIdEnv: string) {
   const wasm = readFileSync(`artifacts/${name}`)
+  const preset = process.env[codeIdEnv]
+  if (preset) {
+    const codeId = Number(preset)
+    const details = await client.getCodeDetails(codeId)
+    const local = createHash('sha256').update(wasm).digest('hex')
+    if (details.checksum.toLowerCase() !== local) {
+      throw new Error(`${codeIdEnv}=${codeId} checksum ${details.checksum} does not match artifacts/${name} (${local})`)
+    }
+    console.log(`using stored ${name} → code ${codeId} (checksum verified)`)
+    return codeId
+  }
   const res = await client.upload(deployer, wasm, GAS_MULTIPLIER, `kruuu ${name}`)
   console.log(`stored ${name} → code ${res.codeId}  ${explorerTx(res.transactionHash)}`)
   return res.codeId
 }
 
 const codeIds = {
-  cw4Group: await store('cw4_group.wasm'),
-  cw3FlexMultisig: await store('cw3_flex_multisig.wasm'),
-  certificateRegistry: await store('certificate_registry.wasm'),
+  cw4Group: await store('cw4_group.wasm', 'CW4_GROUP_CODE_ID'),
+  cw3FlexMultisig: await store('cw3_flex_multisig.wasm', 'CW3_FLEX_CODE_ID'),
+  certificateRegistry: await store('certificate_registry.wasm', 'REGISTRY_CODE_ID'),
 }
 
 const group = await client.instantiate(
