@@ -128,3 +128,15 @@ bun run gov:proposals
 
 Targets: registry messages (default), `--target group` for membership
 (`update_members`), `--target registry-migrate` for code upgrades.
+
+### One-command rehearsal (no third member needed)
+
+Threshold is 2, so one person holding two member keys can run the whole
+propose → vote → execute loop alone. It adds a throwaway issuer and removes
+it again, proving the multisig controls the registry:
+
+```bash
+PROPOSER_MNEMONIC="..." VOTER_MNEMONIC="..." bun run gov:rehearse
+```
+
+Both keys need a little gas. Membership and code are never touched.
