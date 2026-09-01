@@ -6,6 +6,7 @@
     "generate-key": "bun scripts/generate-key.ts",
     "fetch-artifacts": "bun scripts/fetch-artifacts.ts",
     "deploy": "bun scripts/deploy.ts",
+    "store": "bun scripts/store-code.ts",
     "check": "bun scripts/check.ts",
     "balance": "bun scripts/balance.ts",
     "issue": "bun scripts/issue.ts",
