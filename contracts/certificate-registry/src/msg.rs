@@ -13,6 +13,11 @@ pub struct InstantiateMsg {
     pub issuers: Vec<String>,
 }
 
+/// Payload for the CosmWasm-admin migrate call (the multisig). Carries no
+/// fields today; a future code version adds fields and state transforms here.
+#[cw_serde]
+pub struct MigrateMsg {}
+
 #[cw_serde]
 pub struct CertificateInput {
     /// Globally unique id, chosen by the issuer. Kruuu uses

@@ -35,4 +35,7 @@ pub enum ContractError {
 
     #[error("the issuer allowlist may not be left empty")]
     NoIssuersLeft {},
+
+    #[error("cannot migrate from contract {actual}, expected {expected}")]
+    InvalidMigration { expected: String, actual: String },
 }

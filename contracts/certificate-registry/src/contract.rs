@@ -7,7 +7,7 @@ use cw_storage_plus::Bound;
 use crate::error::ContractError;
 use crate::msg::{
     CertificateInput, CertificateResponse, CertificatesResponse, ConfigResponse, ExecuteMsg,
-    InstantiateMsg, QueryMsg,
+    InstantiateMsg, MigrateMsg, QueryMsg,
 };
 use crate::state::{Certificate, Config, BY_INSTITUTION, BY_RECIPIENT, CERTIFICATES, CONFIG, ISSUERS};
 
@@ -49,6 +49,26 @@ pub fn instantiate(
         .add_attribute("action", "instantiate")
         .add_attribute("owner", owner)
         .add_attribute("issuers", msg.issuers.join(",")))
+}
+
+/// Only the CosmWasm admin (the multisig) can trigger this, and only for a
+/// code id the multisig approved via a passed proposal. State is carried
+/// over untouched; future versions hang their transforms off MigrateMsg.
+#[entry_point]
+pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, ContractError> {
+    let stored = cw2::get_contract_version(deps.storage)?;
+    if stored.contract != CONTRACT_NAME {
+        return Err(ContractError::InvalidMigration {
+            expected: CONTRACT_NAME.to_string(),
+            actual: stored.contract,
+        });
+    }
+    cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+
+    Ok(Response::new()
+        .add_attribute("action", "migrate")
+        .add_attribute("from_version", stored.version)
+        .add_attribute("to_version", CONTRACT_VERSION))
 }
 
 #[entry_point]

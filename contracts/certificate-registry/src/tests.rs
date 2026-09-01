@@ -1,16 +1,17 @@
 use cosmwasm_std::{Addr, Timestamp};
 use cw_multi_test::{App, ContractWrapper, Executor};
 
-use crate::contract::{execute, instantiate, query, MAX_BATCH_SIZE};
+use crate::contract::{execute, instantiate, migrate, query, MAX_BATCH_SIZE};
 use crate::error::ContractError;
 use crate::msg::{
     CertificateInput, CertificateResponse, CertificatesResponse, ConfigResponse, ExecuteMsg,
-    InstantiateMsg, QueryMsg,
+    InstantiateMsg, MigrateMsg, QueryMsg,
 };
 
 struct TestEnv {
     app: App,
     contract: Addr,
+    code_id: u64,
     owner: Addr,
     issuer: Addr,
     rando: Addr,
@@ -38,7 +39,7 @@ fn setup() -> TestEnv {
     let issuer = app.api().addr_make("relayer");
     let rando = app.api().addr_make("someone-else");
 
-    let code = ContractWrapper::new(execute, instantiate, query);
+    let code = ContractWrapper::new(execute, instantiate, query).with_migrate(migrate);
     let code_id = app.store_code(Box::new(code));
 
     let contract = app
@@ -58,6 +59,7 @@ fn setup() -> TestEnv {
     TestEnv {
         app,
         contract,
+        code_id,
         owner,
         issuer,
         rando,
@@ -593,4 +595,63 @@ fn ownership_transfer() {
         err.downcast::<ContractError>().unwrap(),
         ContractError::Unauthorized {}
     );
+}
+
+#[test]
+fn admin_can_migrate_and_state_survives() {
+    let mut env = setup();
+
+    env.app
+        .execute_contract(
+            env.issuer.clone(),
+            env.contract.clone(),
+            &ExecuteMsg::Issue {
+                cert: cert("cert:1", 10, 20),
+            },
+            &[],
+        )
+        .unwrap();
+
+    env.app
+        .migrate_contract(
+            env.owner.clone(),
+            env.contract.clone(),
+            &MigrateMsg {},
+            env.code_id,
+        )
+        .unwrap();
+
+    let stored = get_cert(&env, "cert:1").certificate;
+    assert_eq!(stored.cert_id, "cert:1");
+    let config: ConfigResponse = env
+        .app
+        .wrap()
+        .query_wasm_smart(env.contract.clone(), &QueryMsg::Config {})
+        .unwrap();
+    assert_eq!(config.total_issued, 1);
+    assert_eq!(config.owner, env.owner.to_string());
+    assert_eq!(config.issuers, vec![env.issuer.to_string()]);
+}
+
+#[test]
+fn non_admin_cannot_migrate() {
+    let mut env = setup();
+
+    for sender in [env.rando.clone(), env.issuer.clone()] {
+        env.app
+            .migrate_contract(sender, env.contract.clone(), &MigrateMsg {}, env.code_id)
+            .unwrap_err();
+    }
+}
+
+#[test]
+fn migrate_rejects_foreign_contract_state() {
+    use cosmwasm_std::testing::{mock_dependencies, mock_env};
+
+    let mut deps = mock_dependencies();
+    cw2::set_contract_version(deps.as_mut().storage, "crates.io:some-other-contract", "9.9.9")
+        .unwrap();
+
+    let err = migrate(deps.as_mut(), mock_env(), MigrateMsg {}).unwrap_err();
+    assert!(matches!(err, ContractError::InvalidMigration { .. }));
 }
